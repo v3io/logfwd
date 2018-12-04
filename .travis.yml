@@ -1,0 +1,17 @@
+sudo: required
+
+services:
+  - docker
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+
+language: go
+go_import_path: github.com/v3io/logfwd
+go: "1.11"
+
+script:
+  - make
+
