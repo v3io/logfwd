@@ -1,0 +1,11 @@
+admin:
+  dead-letters: true
+  output:
+    http:
+      method: POST
+      endpoint: example.com:9090
+      headers:
+        EXAMPLE: -1
+      authentication:
+        header:
+          AUTH: open

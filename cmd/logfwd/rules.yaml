@@ -1,0 +1,31 @@
+admin:
+  dead-letters: false
+  output:
+    http:
+      method: POST
+      endpoint: example.com:9090
+      headers:
+        EXAMPLE: -1
+      authentication:
+        header:
+          AUTH: open
+
+output:
+  - namespace: endpoint1
+    http:
+      method: POST
+      endpoint: example1.com:9090
+      headers:
+        EXAMPLE: 1
+      authentication:
+        header:
+          AUTH1: open
+  - namespace: endpoint2
+    http:
+      method: POST
+      endpoint: example2.com:9090
+      headers:
+        EXAMPLE: 2
+      authentication:
+        header:
+          AUTH2: open
