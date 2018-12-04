@@ -1,10 +1,10 @@
 package app
 
 import (
-	"github.com/v3io/logfwd/pkg/rules"
-	rest "github.com/v3io/logfwd/pkg/server"
 	"github.com/spf13/cobra"
 	"github.com/v3io/go-errors"
+	"github.com/v3io/logfwd/pkg/rules"
+	rest "github.com/v3io/logfwd/pkg/server"
 )
 
 type serverCommand struct {

@@ -8,9 +8,9 @@ import (
 
 	"encoding/json"
 
-	"github.com/v3io/logfwd/pkg/record"
 	"github.com/nuclio/logger"
 	"github.com/v3io/go-errors"
+	"github.com/v3io/logfwd/pkg/record"
 	"gopkg.in/yaml.v2"
 )
 

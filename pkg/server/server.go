@@ -1,11 +1,11 @@
 package server
 
 import (
-	"github.com/v3io/logfwd/pkg/record"
-	"github.com/v3io/logfwd/pkg/rules"
 	"github.com/nuclio/logger"
 	"github.com/qiangxue/fasthttp-routing"
 	"github.com/v3io/go-errors"
+	"github.com/v3io/logfwd/pkg/record"
+	"github.com/v3io/logfwd/pkg/rules"
 	"github.com/valyala/fasthttp"
 )
 

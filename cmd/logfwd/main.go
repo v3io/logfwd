@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/v3io/logfwd/cmd/logfwd/app"
 	"github.com/v3io/go-errors"
+	"github.com/v3io/logfwd/cmd/logfwd/app"
 )
 
 func main() {
