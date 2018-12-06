@@ -23,6 +23,7 @@ func (s *HTTPSink) Start() {
 
 	s.log.DebugWith("Updating request URI", "uri", s.output.Endpoint)
 	s.request.URI().Update(s.output.Endpoint)
+	s.request.Header.SetContentType("application/json")
 	s.log.DebugWith("Updating request Method", "method", s.output.Method)
 	s.request.Header.SetMethod(strings.ToUpper(s.output.Method))
 	for key, value := range s.output.Headers {
