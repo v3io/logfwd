@@ -1,3 +1,11 @@
+FROM golang:1.11 as builder
+
+# copy sources
+ADD . /go/src/github.com/v3io/logfwd
+
+# build the logfwd
+RUN make -C /go/src/github.com/v3io/logfwd bin
+
 FROM debian:stretch-slim
 
 RUN apt-get update && \
@@ -7,6 +15,6 @@ RUN apt-get update && \
 
 EXPOSE 8080
 
-COPY logfwd /usr/local/bin/logfwd
+COPY --from=builder /go/bin/logfwd /usr/local/bin/logfwd
 
 CMD [ "logfwd" ]
