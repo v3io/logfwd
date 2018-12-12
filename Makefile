@@ -1,5 +1,5 @@
 LOGFWD_PATH ?= src/github.com/v3io/logfwd
-LOGFWD_TAG ?= 0.1.0
+LOGFWD_TAG ?= latest
 LOGFWD_REPOSITORY ?= v3io/
 LOGFWD_BUILD_COMMAND ?= CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-s -w" -o $(GOPATH)/bin/logfwd $(GOPATH)/$(LOGFWD_PATH)/cmd/logfwd/main.go
 
