@@ -13,6 +13,11 @@ git_project_user = "gkirok"
 git_deploy_user = "iguazio-dev-git-user"
 git_deploy_user_token = "iguazio-dev-git-user-token"
 
+pipelinex = library(identifier: 'pipelinex@DEVOPS-204-pipelinex', retriever: modernSCM(
+        [$class: 'GitSCMSource',
+         credentialsId: "iguazio-dev-git-user-private-key",
+         remote: "git@github.com:${git_project_user}/pipelinex.git"])).com.iguazio.pipelinex
+
 properties([pipelineTriggers([[$class: 'PeriodicFolderTrigger', interval: '2m']])])
 podTemplate(label: "${git_project}-${label}", yaml: """
 apiVersion: v1
@@ -62,11 +67,6 @@ spec:
                 string(credentialsId: artifactory_url, variable: 'ARTIFACTORY_URL')
         ]) {
             def TAG_VERSION
-
-            def pipelinex = library(identifier: 'pipelinex@DEVOPS-204-pipelinex', retriever: modernSCM(
-                    [$class: 'GitSCMSource',
-                     credentialsId: "iguazio-dev-git-user-private-key",
-                     remote: 'git@github.com:gkirok/pipelinex.git'])).com.iguazio.pipelinex
 
             stage('get tag data') {
                 container('jnlp') {
