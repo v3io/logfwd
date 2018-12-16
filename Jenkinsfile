@@ -1,22 +1,17 @@
 label = "${UUID.randomUUID().toString()}"
 BUILD_FOLDER = "/go"
 expired=240
-quay_user = "gkirok"
-quay_credentials = "iguazio-dev-quay-credentials"
-docker_user = "gallziguazio"
-docker_credentials = "iguazio-dev-docker-credentials"
-artifactory_user = "gallz"
-artifactory_url = "iguazio-dev-artifactory-url"
-artifactory_credentials = "iguazio-dev-artifactory-credentials"
 git_project = "logfwd"
 git_project_user = "gkirok"
-git_deploy_user = "iguazio-dev-git-user"
 git_deploy_user_token = "iguazio-dev-git-user-token"
+git_deploy_user_private_key = "iguazio-dev-git-user-private-key"
 
 pipelinex = library(identifier: 'pipelinex@DEVOPS-204-pipelinex', retriever: modernSCM(
         [$class: 'GitSCMSource',
          credentialsId: "iguazio-dev-git-user-private-key",
          remote: "git@github.com:${git_project_user}/pipelinex.git"])).com.iguazio.pipelinex
+multi_credentials=[pipelinex.DockerRepoDev.ARTIFACTORY, pipelinex.DockerRepoDev.DOCKER_HUB, pipelinex.DockerRepoDev.QUAY_IO]
+
 
 properties([pipelineTriggers([[$class: 'PeriodicFolderTrigger', interval: '2m']])])
 podTemplate(label: "${git_project}-${label}", yaml: """
@@ -62,9 +57,7 @@ spec:
 ) {
     node("${git_project}-${label}") {
         withCredentials([
-                usernamePassword(credentialsId: git_deploy_user, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME'),
-                string(credentialsId: git_deploy_user_token, variable: 'GIT_TOKEN'),
-                string(credentialsId: artifactory_url, variable: 'ARTIFACTORY_URL')
+                string(credentialsId: git_deploy_user_token, variable: 'GIT_TOKEN')
         ]) {
             def TAG_VERSION
 
@@ -90,12 +83,8 @@ spec:
             if ( TAG_VERSION != null && TAG_VERSION.length() > 0 && PUBLISHED_BEFORE < expired ) {
                 stage('prepare sources') {
                     container('jnlp') {
-                        sh """
-                            cd ${BUILD_FOLDER}
-                            git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${git_project_user}/${git_project}.git src/github.com/v3io/${git_project}
-                            cd src/github.com/v3io/${git_project}
-                            git checkout v${TAG_VERSION}
-                        """
+                        sh "cd ${BUILD_FOLDER}"
+                        git_clone(git_project, git_project_user, "v${TAG_VERSION}", clean_before = true, credential = git_deploy_user_private_key)
                     }
                 }
 
@@ -103,14 +92,14 @@ spec:
                     container('docker-cmd') {
                         sh """
                             cd ${BUILD_FOLDER}/src/github.com/v3io/${git_project}
-                            docker build . -f Dockerfile.multi --tag ${git_project}:${TAG_VERSION} --tag ${docker_user}/${git_project}:${TAG_VERSION} --tag ${docker_user}/${git_project}:latest --tag quay.io/${quay_user}/${git_project}:${TAG_VERSION} --tag quay.io/${quay_user}/${git_project}:latest --tag ${ARTIFACTORY_URL}/${artifactory_user}/${git_project}:${TAG_VERSION} --tag ${ARTIFACTORY_URL}/${artifactory_user}/${git_project}:latest
+                            docker build . -f Dockerfile.multi --tag ${git_project}:${TAG_VERSION}
                         """
                     }
                 }
 
                 stage('push') {
                     container('docker-cmd') {
-                        dockerx.images_push_multi_registries(["${git_project}:${TAG_VERSION}"], [pipelinex.DockerRepoDev.ARTIFACTORY_K8S, pipelinex.DockerRepoDev.DOCKER_HUB, pipelinex.DockerRepoDev.QUAY_IO])
+                        dockerx.images_push_multi_registries(["${git_project}:${TAG_VERSION}"], multi_credentials)
                     }
                 }
 
