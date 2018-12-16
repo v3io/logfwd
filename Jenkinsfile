@@ -66,12 +66,7 @@ spec:
                             returnStdout: true
                     ).trim()
 
-                    sh "curl -H \"Authorization: token ${GIT_TOKEN}\" https://api.github.com/repos/${git_project_user}/${git_project}/releases/tags/v${TAG_VERSION} > ~/tag_version"
-
-                    PUBLISHED_BEFORE = sh(
-                            script: "tag_published_at=\$(cat ~/tag_version | python -c 'import json,sys;obj=json.load(sys.stdin);print obj[\"published_at\"]'); SECONDS=\$(expr \$(date +%s) - \$(date -d \"\$tag_published_at\" +%s)); expr \$SECONDS / 60 + 1",
-                            returnStdout: true
-                    ).trim().toInteger()
+                    PUBLISHED_BEFORE = common.get_tag_published_before(git_project, git_project_user, "v${TAG_VERSION}", GIT_TOKEN)
 
                     echo "$TAG_VERSION"
                     echo "$PUBLISHED_BEFORE"
@@ -81,19 +76,18 @@ spec:
             if ( TAG_VERSION != null && TAG_VERSION.length() > 0 && PUBLISHED_BEFORE < expired ) {
                 stage('prepare sources') {
                     container('jnlp') {
-                        dir("${BUILD_FOLDER}/src/github.com/v3io/logfwd") {
+                        dir("${BUILD_FOLDER}/src/github.com/v3io/${git_project}") {
                             git(changelog: false, credentialsId: git_deploy_user_private_key, poll: false, url: "git@github.com:${git_project_user}/${git_project}.git")
-                            sh "git checkout v${TAG_VERSION}"
+                            sh("git checkout v${TAG_VERSION}")
                         }
                     }
                 }
 
                 stage('build ${git_project} in dood') {
                     container('docker-cmd') {
-                        sh """
-                            cd ${BUILD_FOLDER}/src/github.com/v3io/${git_project}
-                            docker build . -f Dockerfile.multi --tag ${git_project}:${TAG_VERSION}
-                        """
+                        dir("${BUILD_FOLDER}/src/github.com/v3io/${git_project}") {
+                            sh("docker build . -f Dockerfile.multi --tag ${git_project}:${TAG_VERSION}")
+                        }
                     }
                 }
 
