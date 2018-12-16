@@ -109,7 +109,9 @@ spec:
                 }
 
                 stage('push') {
-                    dockerx.images_push_multi_registries(["${git_project}:${TAG_VERSION}"], [pipelinex.DockerRepoDev.ARTIFACTORY_K8S, pipelinex.DockerRepoDev.DOCKER_HUB, pipelinex.DockerRepoDev.QUAY_IO])
+                    container('docker-cmd') {
+                        dockerx.images_push_multi_registries(["${git_project}:${TAG_VERSION}"], [pipelinex.DockerRepoDev.ARTIFACTORY_K8S, pipelinex.DockerRepoDev.DOCKER_HUB, pipelinex.DockerRepoDev.QUAY_IO])
+                    }
                 }
 
                 stage('update release status') {
