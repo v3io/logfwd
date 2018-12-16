@@ -63,6 +63,11 @@ spec:
         ]) {
             def TAG_VERSION
 
+            def pipelinex = library(identifier: 'pipelinex@DEVOPS-204-pipelinex', retriever: modernSCM(
+                    [$class: 'GitSCMSource',
+                     credentialsId: "iguazio-dev-git-user-private-key",
+                     remote: 'git@github.com:gkirok/pipelinex.git'])).com.iguazio.pipelinex
+
             stage('get tag data') {
                 container('jnlp') {
                     TAG_VERSION = sh(
@@ -103,31 +108,8 @@ spec:
                     }
                 }
 
-                stage('push to hub') {
-                    container('docker-cmd') {
-                        withDockerRegistry([credentialsId: docker_credentials, url: "https://index.docker.io/v1/"]) {
-                            sh "docker push docker.io/${docker_user}/${git_project}:${TAG_VERSION};"
-                            sh "docker push docker.io/${docker_user}/${git_project}:latest;"
-                        }
-                    }
-                }
-
-                stage('push to quay') {
-                    container('docker-cmd') {
-                        withDockerRegistry([credentialsId: quay_credentials, url: "https://quay.io/api/v1/"]) {
-                            sh "docker push quay.io/${quay_user}/${git_project}:${TAG_VERSION}"
-                            sh "docker push quay.io/${quay_user}/${git_project}:latest"
-                        }
-                    }
-                }
-
-                stage('push to artifactory') {
-                    container('docker-cmd') {
-                        withDockerRegistry([credentialsId: artifactory_credentials, url: "https://${ARTIFACTORY_URL}/api/v1/"]) {
-                            sh "docker push ${ARTIFACTORY_URL}/${artifactory_user}/${git_project}:${TAG_VERSION}"
-                            sh "docker push ${ARTIFACTORY_URL}/${artifactory_user}/${git_project}:latest"
-                        }
-                    }
+                stage('push') {
+                    dockerx.images_push_multi_registries(["${git_project}:${TAG_VERSION}"], [pipelinex.DockerRepoDev.ARTIFACTORY_K8S, pipelinex.DockerRepoDev.DOCKER_HUB, pipelinex.DockerRepoDev.QUAY_IO])
                 }
 
                 stage('update release status') {
