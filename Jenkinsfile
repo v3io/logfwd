@@ -6,13 +6,6 @@ git_project_user = "gkirok"
 git_deploy_user_token = "iguazio-dev-git-user-token"
 git_deploy_user_private_key = "iguazio-dev-git-user-private-key"
 
-pipelinex = library(identifier: 'pipelinex@DEVOPS-204-pipelinex', retriever: modernSCM(
-        [$class: 'GitSCMSource',
-         credentialsId: "iguazio-dev-git-user-private-key",
-         remote: "git@github.com:${git_project_user}/pipelinex.git"])).com.iguazio.pipelinex
-multi_credentials=[pipelinex.DockerRepoDev.ARTIFACTORY, pipelinex.DockerRepoDev.DOCKER_HUB, pipelinex.DockerRepoDev.QUAY_IO]
-
-
 properties([pipelineTriggers([[$class: 'PeriodicFolderTrigger', interval: '2m']])])
 podTemplate(label: "${git_project}-${label}", yaml: """
 apiVersion: v1
@@ -60,6 +53,11 @@ spec:
                 string(credentialsId: git_deploy_user_token, variable: 'GIT_TOKEN')
         ]) {
             def TAG_VERSION
+            pipelinex = library(identifier: 'pipelinex@DEVOPS-204-pipelinex', retriever: modernSCM(
+                    [$class: 'GitSCMSource',
+                     credentialsId: "iguazio-dev-git-user-private-key",
+                     remote: "git@github.com:${git_project_user}/pipelinex.git"])).com.iguazio.pipelinex
+            multi_credentials=[pipelinex.DockerRepoDev.ARTIFACTORY, pipelinex.DockerRepoDev.DOCKER_HUB, pipelinex.DockerRepoDev.QUAY_IO]
 
             stage('get tag data') {
                 container('jnlp') {
@@ -83,8 +81,11 @@ spec:
             if ( TAG_VERSION != null && TAG_VERSION.length() > 0 && PUBLISHED_BEFORE < expired ) {
                 stage('prepare sources') {
                     container('jnlp') {
-                        sh "cd ${BUILD_FOLDER}"
-                        git_clone(git_project, git_project_user, "v${TAG_VERSION}", clean_before = true, credential = git_deploy_user_private_key)
+                        dir("${BUILD_FOLDER}/src/github.com/v3io/logfwd") {
+                            git(changelog: false, credentialsId: git_deploy_user_private_key, poll: false, url: "git@github.com:${git_project_user}/${git_project}.git")
+                            sh "git checkout v${TAG_VERSION}"
+                            sh "ls -la "
+                        }
                     }
                 }
 
