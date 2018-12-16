@@ -1,0 +1,17 @@
+FROM golang:1.11 as builder
+ADD ./ /go/src/github.com/v3io/logfwd
+WORKDIR /go/src/github.com/v3io/logfwd
+RUN make bin
+
+FROM debian:stretch-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+EXPOSE 8080
+
+COPY --from=builder /go/src/github.com/v3io/logfwd/logfwd /usr/local/bin/logfwd
+
+CMD [ "logfwd" ]
