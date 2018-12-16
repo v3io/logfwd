@@ -1,18 +1,17 @@
 label = "${UUID.randomUUID().toString()}"
 BUILD_FOLDER = "/go"
 expired=240
-env=prod
 quay_user = "gkirok"
-quay_credentials = "iguazio-${env}-quay-credentials"
+quay_credentials = "iguazio-dev-quay-credentials"
 docker_user = "gallziguazio"
-docker_credentials = "iguazio-${env}-docker-credentials"
+docker_credentials = "iguazio-dev-docker-credentials"
 artifactory_user = "gallz"
-artifactory_url = "iguazio-${env}-artifactory-url"
-artifactory_credentials = "iguazio-${env}-artifactory-credentials"
+artifactory_url = "iguazio-dev-artifactory-url"
+artifactory_credentials = "iguazio-dev-artifactory-credentials"
 git_project = "logfwd"
 git_project_user = "gkirok"
-git_deploy_user = "iguazio-${env}-git-user"
-git_deploy_user_token = "iguazio-${env}-git-user-token"
+git_deploy_user = "iguazio-dev-git-user"
+git_deploy_user_token = "iguazio-dev-git-user-token"
 
 properties([pipelineTriggers([[$class: 'PeriodicFolderTrigger', interval: '2m']])])
 podTemplate(label: "${git_project}-${label}", yaml: """
@@ -89,6 +88,8 @@ spec:
                         sh """
                             cd ${BUILD_FOLDER}
                             git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${git_project_user}/${git_project}.git src/github.com/v3io/${git_project}
+                            cd src/github.com/v3io/${git_project}
+                            git checkout v${TAG_VERSION}
                         """
                     }
                 }
