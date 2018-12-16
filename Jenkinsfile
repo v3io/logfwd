@@ -55,7 +55,7 @@ spec:
             def TAG_VERSION
             pipelinex = library(identifier: 'pipelinex@DEVOPS-204-pipelinex', retriever: modernSCM(
                     [$class: 'GitSCMSource',
-                     credentialsId: "iguazio-dev-git-user-private-key",
+                     credentialsId: git_deploy_user_private_key,
                      remote: "git@github.com:${git_project_user}/pipelinex.git"])).com.iguazio.pipelinex
             multi_credentials=[pipelinex.DockerRepoDev.ARTIFACTORY, pipelinex.DockerRepoDev.DOCKER_HUB, pipelinex.DockerRepoDev.QUAY_IO]
 
@@ -84,7 +84,6 @@ spec:
                         dir("${BUILD_FOLDER}/src/github.com/v3io/logfwd") {
                             git(changelog: false, credentialsId: git_deploy_user_private_key, poll: false, url: "git@github.com:${git_project_user}/${git_project}.git")
                             sh "git checkout v${TAG_VERSION}"
-                            sh "ls -la "
                         }
                     }
                 }
@@ -105,7 +104,7 @@ spec:
                 }
 
                 stage('update release status') {
-                    sh "release_id=\$(curl -H \"Content-Type: application/json\" -H \"Authorization: token ${GIT_TOKEN}\" -X GET https://api.github.com/repos/${git_project_user}/${git_project}/releases/tags/v${TAG_VERSION} | python -c 'import json,sys;obj=json.load(sys.stdin);print obj[\"id\"]'); curl -H \"Content-Type: application/json\" -H \"Authorization: token ${GIT_TOKEN}\" -X PATCH https://api.github.com/repos/${git_project_user}/${git_project}/releases/\${release_id} -d '{\"prerelease\": false}'"
+                    common.update_release_status(git_project, git_project_user, "v${TAG_VERSION}", GIT_TOKEN)
                 }
             } else {
                 stage('warning') {
