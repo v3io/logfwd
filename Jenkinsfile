@@ -6,7 +6,6 @@ git_project_user = "gkirok"
 git_deploy_user_token = "iguazio-dev-git-user-token"
 git_deploy_user_private_key = "iguazio-dev-git-user-private-key"
 
-properties([pipelineTriggers([[$class: 'PeriodicFolderTrigger', interval: '2m']])])
 podTemplate(label: "${git_project}-${label}", yaml: """
 apiVersion: v1
 kind: Pod
@@ -98,7 +97,9 @@ spec:
                 }
 
                 stage('update release status') {
-                    common.update_release_status(git_project, git_project_user, "v${TAG_VERSION}", GIT_TOKEN)
+                    container('jnlp') {
+                        common.update_release_status(git_project, git_project_user, "v${TAG_VERSION}", GIT_TOKEN)
+                    }
                 }
             } else {
                 stage('warning') {
