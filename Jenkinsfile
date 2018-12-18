@@ -81,14 +81,14 @@ spec:
                 stage("build ${git_project} in dood") {
                     container('docker-cmd') {
                         dir("${BUILD_FOLDER}/src/github.com/v3io/${git_project}") {
-                            sh("docker build . -f Dockerfile.multi --tag ${git_project}:${TAG_VERSION} --tag ${git_project}:latest")
+                            sh("docker build . -f Dockerfile.multi --tag ${git_project}:${TAG_VERSION} ")
                         }
                     }
                 }
 
                 stage('push') {
                     container('docker-cmd') {
-                        dockerx.images_push_multi_registries(["${git_project}:${TAG_VERSION}", "${git_project}:latest"], multi_credentials)
+                        dockerx.images_push_multi_registries(["${git_project}:${TAG_VERSION}"], multi_credentials)
                     }
                 }
 
