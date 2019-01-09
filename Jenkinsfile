@@ -33,7 +33,7 @@ spec:
     - name: docker-cmd
       image: docker
       command: [ "/bin/sh", "-c", "--" ]
-      args: [ "while true; do sleep 30; done;" ]
+      args: [ "apk add make; while true; do sleep 30; done;" ]
       volumeMounts:
         - name: docker-sock
           mountPath: /var/run
@@ -84,7 +84,7 @@ spec:
                     stage("build ${git_project} in dood") {
                         container('docker-cmd') {
                             dir("${BUILD_FOLDER}/src/github.com/v3io/${git_project}") {
-                                sh("docker build . --tag ${git_project}:${DOCKER_TAG_VERSION}")
+                                sh("LOGFWD_TAG=${DOCKER_TAG_VERSION} make build")
                             }
                         }
                     }
