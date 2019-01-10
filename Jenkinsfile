@@ -84,7 +84,7 @@ spec:
                     stage("build ${git_project} in dood") {
                         container('docker-cmd') {
                             dir("${BUILD_FOLDER}/src/github.com/v3io/${git_project}") {
-                                sh("LOGFWD_TAG=${DOCKER_TAG_VERSION} make build")
+                                sh("LOGFWD_REPOSITORY= LOGFWD_TAG=${DOCKER_TAG_VERSION} make build")
                             }
                         }
                     }
