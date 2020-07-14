@@ -1,15 +1,19 @@
-GO_BUILD=GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-s -w"
-RELEASE_VERSION = "0.1.0"
-DOCKER_HUB_USER = "iguaziodocker"
+LOGFWD_PATH ?= src/github.com/v3io/logfwd
+LOGFWD_TAG ?= latest
+LOGFWD_REPOSITORY ?= v3io/
+LOGFWD_BUILD_COMMAND ?= CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-s -w" -o $(GOPATH)/bin/logfwd $(GOPATH)/$(LOGFWD_PATH)/cmd/logfwd/main.go
 
-all: lint bin image
+.PHONY: all
+all: lint build
 	@echo Done.
 
-bin: ensure-gopath
-	$(GO_BUILD) -o logfwd cmd/logfwd/main.go
+.PHONY: build
+build:
+	docker build --tag=$(LOGFWD_REPOSITORY)logfwd:$(LOGFWD_TAG) .
 
-image:
-	docker build --rm --tag $(DOCKER_HUB_USER)/logfwd:$(RELEASE_VERSION) .
+.PHONY: ensure-gopath bin
+bin:
+	$(LOGFWD_BUILD_COMMAND)
 
 .PHONY: lint
 lint: ensure-gopath
@@ -55,7 +59,7 @@ test:
 	go test -v ./pkg/...
 
 .PHONY: ensure-gopath
-check-gopath:
-ifndef GOPATH
-    $(error GOPATH must be set)
-endif
+ensure-gopath:
+	ifndef GOPATH
+		$(error GOPATH must be set)
+	endif
